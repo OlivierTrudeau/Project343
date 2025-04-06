@@ -1,5 +1,6 @@
 % Monte Carlo Simulation for Sallen-Key Filter
-
+clear;
+clc;
 % Nominal values
 R1_nom = 30000;          % in Ohms
 R2_nom = 18000;          % in Ohms
@@ -31,6 +32,9 @@ Vout_abs = abs(Vout);
 mean_Vout = mean(Vout_abs);
 std_Vout = std(Vout_abs);
 
+% Calculate PDF
+[pdf_values, xi_values] = ksdensity(Vout_abs);
+
 % Display results
 fprintf('Mean |Vout| = %f\n', mean_Vout);
 fprintf('Std  |Vout| = %f\n', std_Vout);
@@ -41,3 +45,10 @@ histogram(Vout_abs, 50);
 title('Histogram of |V_{out}| from Monte Carlo Simulation');
 xlabel('|V_{out}|');
 ylabel('Frequency');
+
+% Plot the PDF curve
+figure;
+plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5);
+title('PDF of |V_{out}| from Monte Carlo Simulation');
+xlabel('|V_{out}|');
+ylabel('Probability Density');
