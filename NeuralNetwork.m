@@ -5,7 +5,7 @@ C1_nom = 0.01e-6;
 C2_nom = 0.0047e-6; 
 
 %Step 1: Generate Training Data
-N = 200;  % number of training samples
+N = 2000;  % number of training samples
 X_train = zeros(N, 4);  % [R1, R2, C1, C2]
 Y_train = zeros(N, 1);  % |Vout|
 
@@ -36,7 +36,7 @@ net = fitnet(hiddenLayerSize);  % creates neural network
 [net,] = train(net, X_train, Y_train); %Stores trained network in net
 
 % Step 3: Evaluate the Neural Network 
-N2 = 1000;  % number of test samples
+N2 = 10000;  % number of test samples
 X_test = zeros(4, N2);  % test input parameters (as columns)
 Y_expected = zeros(N2, 1);  % circuit outputs from simulation
 
@@ -55,8 +55,11 @@ for i = 1:N2
     Y_expected(i) = abs(Vout);
 end
 
+
 % Use the neural network surrogate to predict |Vout|
+tic;
 Y_pred = net(X_test);
+computation_time = toc;
 
 % Step 4: Compute statistics from the neural network predictions 
 mean_pred = mean(Y_pred);

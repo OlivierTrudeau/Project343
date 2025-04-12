@@ -12,7 +12,9 @@ N = 10000;
 
 % Pre-allocate array for storing output voltages
 Vout = zeros(N,1);
+X_test = zeros(4, N);  % test input parameters (as columns)
 
+%Produce input
 % Run Monte Carlo simulation
 for i = 1:N
     % Generate random samples uniformly distributed within ±5% of the nominal value
@@ -20,10 +22,23 @@ for i = 1:N
     R2 = R2_nom * (0.95 + 0.1*rand());
     C1 = C1_nom * (0.95 + 0.1*rand());
     C2 = C2_nom * (0.95 + 0.1*rand());
-    
-    % Compute the filter output using the provided function
-    Vout(i) = simulate_sallenKeyFilter(R1, R2, C1, C2);
+
+    % Store the values 
+    X_test(:, i) = [R1; R2; C1; C2];
 end
+
+%Run the monte carlo method
+tic;
+for i = 1:N
+    % Compute the filter output using the provided function
+    R1 = X_test(1, i);
+    R2 = X_test(2, i);
+    C1 = X_test(3, i);
+    C2 = X_test(4, i);
+
+    Vout(i) = simulate_sallenKeyFilter(R1, R2, C1, C2);
+end 
+computation_time = toc;
 
 % Compute the magnitude of Vout (since it is complex)
 Vout_abs = abs(Vout);
