@@ -8,7 +8,7 @@ C1_nom = 0.01e-6;        % in Farads
 C2_nom = 0.0047e-6;      % in Farads
 
 % Number of Monte Carlo iterations
-N = 10000;
+N = 1000;
 
 % Pre-allocate array for storing output voltages
 Vout = zeros(N,1);
@@ -51,9 +51,10 @@ std_Vout = std(Vout_abs);
 [pdf_values, xi_values] = ksdensity(Vout_abs);
 
 % Display results
+fprintf('Iterations = %d\n', N);
 fprintf('Mean |Vout| = %f\n', mean_Vout);
 fprintf('Std  |Vout| = %f\n', std_Vout);
-
+fprintf('Computation Time (s) = %f\n',computation_time);
 % Plot the histogram of |Vout|
 figure;
 histogram(Vout_abs, 50);
@@ -63,7 +64,14 @@ ylabel('Frequency');
 
 % Plot the PDF curve
 figure;
-plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5);
+hold on
+plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5,'DisplayName','Monte-Carlo Distribution');
+y_gauss = normpdf(xi_values,mean_Vout,std_Vout);
+plot(xi_values,y_gauss, 'b-','LineWidth',1.5,'DisplayName', 'Gaussian Distribution');
 title('PDF of |V_{out}| from Monte Carlo Simulation');
 xlabel('|V_{out}|');
 ylabel('Probability Density');
+legend('Location','Best')
+
+diff = norm(y_gauss-pdf_values);
+fprintf('Difference with Gaussian = %f\n',diff);

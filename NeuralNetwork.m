@@ -5,7 +5,7 @@ C1_nom = 0.01e-6;
 C2_nom = 0.0047e-6; 
 
 %Step 1: Generate Training Data
-N = 2000;  % number of training samples
+N = 4000;  % number of training samples
 X_train = zeros(N, 4);  % [R1, R2, C1, C2]
 Y_train = zeros(N, 1);  % |Vout|
 
@@ -29,7 +29,7 @@ X_train = X_train';
 Y_train = Y_train';
 
 % Step 2: Define and Train the Neural Network
-hiddenLayerSize = 10; % arbitrary number set through trial and error
+hiddenLayerSize = [20 10]; % arbitrary number set through trial and error
 net = fitnet(hiddenLayerSize);  % creates neural network
 
 % Train the network using the training data
@@ -64,9 +64,15 @@ computation_time = toc;
 % Step 4: Compute statistics from the neural network predictions 
 mean_pred = mean(Y_pred);
 std_pred = std(Y_pred);
+diff = norm(Y_expected' - Y_pred);
+
+% Calculate PDF
+[pdf_values, xi_values] = ksdensity(Y_pred);
 
 fprintf('Neural Network surrogate mean |Vout| = %f\n', mean_pred);
 fprintf('Neural Network surrogate std  |Vout| = %f\n', std_pred);
+fprintf('Neural Network surrogate difference with expected = %f\n', diff);
+fprintf('Computation Time (s) = %f\n',computation_time);
 
 % Plot the histogram of the neural network predicted |Vout|
 figure;
@@ -74,3 +80,10 @@ histogram(Y_pred, 50);
 title('Histogram of |V_{out}| from Neural Network Surrogate');
 xlabel('|V_{out}|');
 ylabel('Frequency');
+
+figure;
+hold on
+plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5);
+title('PDF of |V_{out}| from Neural Network Surrogate');
+xlabel('|V_{out}|');
+ylabel('Probability Density');
