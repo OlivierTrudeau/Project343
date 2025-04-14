@@ -8,7 +8,7 @@ C1_nom = 0.01e-6;        % in Farads
 C2_nom = 0.0047e-6;      % in Farads
 
 % Number of Monte Carlo iterations
-N = 1000;
+N = 1000000;
 
 % Pre-allocate array for storing output voltages
 Vout = zeros(N,1);
@@ -47,14 +47,20 @@ Vout_abs = abs(Vout);
 mean_Vout = mean(Vout_abs);
 std_Vout = std(Vout_abs);
 
+% Calculate the expected mean given nominal component values
+Expectedmean = abs(simulate_sallenKeyFilter(R1_nom, R2_nom, C1_nom, C2_nom));
+
 % Calculate PDF
 [pdf_values, xi_values] = ksdensity(Vout_abs);
 
 % Display results
 fprintf('Iterations = %d\n', N);
 fprintf('Mean |Vout| = %f\n', mean_Vout);
+fprintf('Expected Mean = %f\n', Expectedmean);
+fprintf('Relative Difference = %f\n', abs(100*(Expectedmean-mean_Vout)/Expectedmean)); % expressed in %
 fprintf('Std  |Vout| = %f\n', std_Vout);
 fprintf('Computation Time (s) = %f\n',computation_time);
+
 % Plot the histogram of |Vout|
 figure;
 histogram(Vout_abs, 50);
@@ -65,13 +71,8 @@ ylabel('Frequency');
 % Plot the PDF curve
 figure;
 hold on
-plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5,'DisplayName','Monte-Carlo Distribution');
-y_gauss = normpdf(xi_values,mean_Vout,std_Vout);
-plot(xi_values,y_gauss, 'b-','LineWidth',1.5,'DisplayName', 'Gaussian Distribution');
+plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5);
 title('PDF of |V_{out}| from Monte Carlo Simulation');
 xlabel('|V_{out}|');
 ylabel('Probability Density');
-legend('Location','Best')
 
-diff = norm(y_gauss-pdf_values);
-fprintf('Difference with Gaussian = %f\n',diff);

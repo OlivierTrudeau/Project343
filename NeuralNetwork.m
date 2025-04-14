@@ -5,7 +5,7 @@ C1_nom = 0.01e-6;
 C2_nom = 0.0047e-6; 
 
 %Step 1: Generate Training Data
-N = 4000;  % number of training samples
+N = 100000;  % number of training samples
 X_train = zeros(N, 4);  % [R1, R2, C1, C2]
 Y_train = zeros(N, 1);  % |Vout|
 
@@ -33,7 +33,9 @@ hiddenLayerSize = [20 10]; % arbitrary number set through trial and error
 net = fitnet(hiddenLayerSize);  % creates neural network
 
 % Train the network using the training data
+tic;
 [net,] = train(net, X_train, Y_train); %Stores trained network in net
+training_time = toc;
 
 % Step 3: Evaluate the Neural Network 
 N2 = 10000;  % number of test samples
@@ -65,14 +67,21 @@ computation_time = toc;
 mean_pred = mean(Y_pred);
 std_pred = std(Y_pred);
 diff = norm(Y_expected' - Y_pred);
+mean_exp = mean(Y_expected);
 
 % Calculate PDF
 [pdf_values, xi_values] = ksdensity(Y_pred);
+[pdf_exp,xi_exp] = ksdensity(Y_train); % expected PDF from MonteCarlo of training data
 
+% Print Values used to evaluate model performance
+fprintf('Training Data N = %d\n',N);
+fprintf('Neural Network surrogate difference with expected = %f\n', diff);
 fprintf('Neural Network surrogate mean |Vout| = %f\n', mean_pred);
 fprintf('Neural Network surrogate std  |Vout| = %f\n', std_pred);
-fprintf('Neural Network surrogate difference with expected = %f\n', diff);
+fprintf('expected Mean |Vout| = %f\n', mean_exp);
+fprintf('Relative Mean Difference = %f\n', abs(100*(mean_exp-mean_pred)/mean_exp)); % expressed in %
 fprintf('Computation Time (s) = %f\n',computation_time);
+fprintf('Training Time (s) = %f\n',training_time);
 
 % Plot the histogram of the neural network predicted |Vout|
 figure;
@@ -81,9 +90,13 @@ title('Histogram of |V_{out}| from Neural Network Surrogate');
 xlabel('|V_{out}|');
 ylabel('Frequency');
 
+
+% Plot the PDF curve
 figure;
 hold on
 plot(xi_values, pdf_values, 'r-', 'LineWidth', 1.5);
+plot(xi_exp, pdf_exp, 'b-', 'LineWidth', 1.5);
 title('PDF of |V_{out}| from Neural Network Surrogate');
 xlabel('|V_{out}|');
 ylabel('Probability Density');
+legend('Simulated PDF','Expected PDF','Location','Best');
